@@ -8,7 +8,7 @@ function ProductDetailPage() {
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
 
-  const product = useProductById();
+  const { productId, product } = useProductById();
 
   if (!product) {
     return (
@@ -29,7 +29,7 @@ function ProductDetailPage() {
       return;
     }
 
-    deleteProduct(product.id);
+    deleteProduct(productId);
     navigate("/products", { replace: true });
   };
 

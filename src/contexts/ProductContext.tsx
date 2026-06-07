@@ -1,4 +1,4 @@
-import { createContext } from "react";
+import { createContext, useEffect, useState } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import type { Product } from "../types/Products";
 
@@ -8,6 +8,8 @@ type ProductContextValue = {
   updateProduct: (product: Product) => void;
   deleteProduct: (id: number) => void;
   toggleStock: (id: number) => void;
+  isLoading: boolean
+  error: string | null
 };
 
 const ProductContext = createContext<ProductContextValue | null>(null);
@@ -41,6 +43,20 @@ export function ProductProvider({ children }: ProductProviderProps) {
     initialProducts,
   );
 
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    try {
+      setIsLoading(true)
+      setError(null)
+    } catch {
+      setError("Failed to load products")
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const addProduct = (product: Product) => {
     setProducts((prevProducts) => [...prevProducts, product]);
   };
@@ -66,12 +82,15 @@ export function ProductProvider({ children }: ProductProviderProps) {
       ),
     );
   };
+
   const value: ProductContextValue = {
     products,
     addProduct,
     updateProduct,
     deleteProduct,
-    toggleStock
+    toggleStock,
+    isLoading,
+    error,
   };
 
   return (

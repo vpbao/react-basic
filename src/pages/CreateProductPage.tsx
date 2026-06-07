@@ -1,14 +1,19 @@
 import { useNavigate } from "react-router";
 import ProductForm from "../components/ProductForm";
 import { useProducts } from "../hooks/useProducts";
-import type { ProductFormValues } from "../types/Products";
+import type { Product, ProductFormValues } from "../types/Products";
 
 const CreateProductPage = () => {
   const navigate = useNavigate();
-  const { addProduct } = useProducts();
+  const { products, addProduct } = useProducts();
 
   const handleCreateProduct = (values: ProductFormValues) => {
-    const newProduct = addProduct(values);
+    const newProduct: Product = {
+      id: products.length + 1,
+      ...values
+    }
+
+    addProduct(newProduct)
 
     navigate(`/products/${newProduct.id}`);
   };

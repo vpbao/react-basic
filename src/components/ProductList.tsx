@@ -4,12 +4,10 @@ import ProductCard from "./ProductCard";
 
 type ProductListProps = {
   products: Product[];
-  onDelete: (id: number) => void;
-  onToggleStock: (id: number) => void;
 };
 
 const ProductList = React.memo(
-  ({ products, onDelete, onToggleStock }: ProductListProps) => {
+  ({ products }: ProductListProps) => {
     return (
       <div>
         {products.length > 0 && (
@@ -30,8 +28,6 @@ const ProductList = React.memo(
               <ProductCard
                 key={product.id}
                 {...product}
-                onDelete={onDelete}
-                onToggleStock={onToggleStock}
               />
             ))}
           </div>

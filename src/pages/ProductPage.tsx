@@ -2,16 +2,14 @@ import type { Product } from "../types/Products";
 import SearchProductForm from "../components/SearchProductForm";
 import ProductList from "../components/ProductList";
 import ProductSummary from "../components/ProductSummary";
-import { useAuth } from "../hooks/useAuth";
 import { useProducts } from "../hooks/useProducts";
 import { useProductFilters } from "../hooks/useProductFilters";
+import LoadingMessage from "../components/ui/LoadingMessage";
+import ErrorMessage from "../components/ui/ErrorMessage";
+import EmptyState from "../components/ui/EmptyState";
 
 const ProductPage = () => {
-  //custom hook Auth
-  const { isAdmin, toggleAdmin } = useAuth();
-
-  //custom hook Product + local storage inside
-  const { products, deleteProduct, toggleStock } = useProducts();
+  const { products, isLoading, error } = useProducts();
 
   //custom hook useProductFilter
   const {
@@ -21,6 +19,30 @@ const ProductPage = () => {
     setSearchFilters,
     clearSearchFilters,
   } = useProductFilters(products);
+
+  //custom hook Product + local storage inside
+  const hasProduct = products.length > 0;
+  const hasFilteredProducts = filteredProducts.length > 0;
+  const isSearchEmpty = !hasProduct && !hasFilteredProducts;
+
+  if (isLoading) {
+    return <LoadingMessage message="Loading products..." />;
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} />;
+  }
+
+  if (!hasProduct) {
+    return (
+      <EmptyState
+        title="No products yet"
+        description="Create your first product to start managing your product list."
+        actionLabel="Create product"
+        actionTo="/products/create"
+      />
+    );
+  }
 
   const handleSearchProduct = (keyword: string, category: string) => {
     setSearchFilters(keyword, category);
@@ -55,19 +77,6 @@ const ProductPage = () => {
         >
           Product list
         </h1>
-        <button
-          style={{
-            padding: "10px",
-            backgroundColor: "#333",
-            color: "#fff",
-            borderRadius: "4px",
-            fontSize: "16px",
-            fontWeight: "bold",
-          }}
-          onClick={() => toggleAdmin()}
-        >
-          {isAdmin ? "Switch to User" : "Switch to Admin"}
-        </button>
       </div>
       <div
         style={{
@@ -100,17 +109,23 @@ const ProductPage = () => {
               gap: "20px",
             }}
           >
-            <ProductList
-              products={filteredProducts}
-              onDelete={deleteProduct}
-              onToggleStock={toggleStock}
-            />
-            <ProductSummary
-              totalProducts={totalProducts}
-              totalFilteredProducts={totalFilteredProducts}
-              totalInStock={totalInStock}
-              totalOutOfStock={totalOutOfStock}
-            />
+            {isSearchEmpty ? (
+              <EmptyState
+                title="No products match your search"
+                description="Try changing your keyword or category."
+              />
+            ) : (
+              <>
+                <ProductList products={filteredProducts} />
+
+                <ProductSummary
+                  totalProducts={totalProducts}
+                  totalFilteredProducts={totalFilteredProducts}
+                  totalInStock={totalInStock}
+                  totalOutOfStock={totalOutOfStock}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>

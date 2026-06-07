@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router";
 import ProductForm from "../components/ProductForm";
 import { useProducts } from "../hooks/useProducts";
-import type { ProductFormValues } from "../types/Products";
+import type { Product, ProductFormValues } from "../types/Products";
 import { Link } from "react-router";
-import useProductById from "../hooks/useProductById";
+import { useProductById } from "../hooks/useProductById";
 
 const EditProductPage = () => {
   const navigate = useNavigate();
@@ -31,7 +31,12 @@ const EditProductPage = () => {
   }
 
   const handleEditProduct = (values: ProductFormValues) => {
-    updateProduct(productId, values);
+    const updatedProduct: Product = {
+      id: productId,
+      ...values
+    }
+
+    updateProduct(updatedProduct);
 
     navigate(`/products/${product.id}`);
   };

@@ -1,16 +1,7 @@
 import React from "react";
 import { Link } from "react-router";
-
-type ProductCardProps = {
-  id: number;
-  name: string;
-  price: number;
-  category: string;
-  inStock: boolean;
-  discount: number;
-  onDelete: (id: number) => void;
-  onToggleStock: (id: number) => void;
-};
+import { useProducts } from "../hooks/useProducts";
+import type { Product } from "../types/Products";
 
 const ProductCard = React.memo(
   ({
@@ -20,9 +11,9 @@ const ProductCard = React.memo(
     category,
     inStock,
     discount,
-    onDelete,
-    onToggleStock,
-  }: ProductCardProps) => {
+  }: Product) => {
+    const { deleteProduct, toggleStock } = useProducts();
+
     return (
       <div>
         <div
@@ -77,7 +68,7 @@ const ProductCard = React.memo(
                 border: "none",
                 padding: "10px",
               }}
-              onClick={() => onDelete(id)}
+              onClick={() => deleteProduct(Number(id))}
             >
               Delete
             </button>
@@ -89,7 +80,7 @@ const ProductCard = React.memo(
                 border: "none",
                 padding: "10px",
               }}
-              onClick={() => onToggleStock(id)}
+              onClick={() => toggleStock(Number(id))}
             >
               Toggle Stock
             </button>
