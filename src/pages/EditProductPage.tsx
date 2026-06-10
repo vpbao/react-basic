@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import ProductForm from "../components/ProductForm";
 import { useProducts } from "../hooks/useProducts";
-import type { Product, ProductFormValues } from "../types/Products";
+import type { ProductFormValues } from "../types/Products";
 import { Link } from "react-router";
 import { useProductById } from "../hooks/useProductById";
 
@@ -30,15 +30,10 @@ const EditProductPage = () => {
     );
   }
 
-  const handleEditProduct = (values: ProductFormValues) => {
-    const updatedProduct: Product = {
-      id: productId,
-      ...values
-    }
+  const handleEditProduct = async (values: ProductFormValues) => {
+    await updateProduct(productId, values)
 
-    updateProduct(updatedProduct);
-
-    navigate(`/products/${product.id}`);
+    navigate(`/products/${productId}`);
   };
 
   return (

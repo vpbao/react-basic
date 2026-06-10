@@ -12,7 +12,11 @@ const ProductCard = React.memo(
     inStock,
     discount,
   }: Product) => {
-    const { deleteProduct, toggleStock } = useProducts();
+    const { deleteProduct } = useProducts();
+
+    const handleDelete = (id: number) => {
+      deleteProduct(id)
+    }
 
     return (
       <div>
@@ -68,21 +72,9 @@ const ProductCard = React.memo(
                 border: "none",
                 padding: "10px",
               }}
-              onClick={() => deleteProduct(Number(id))}
+              onClick={() => handleDelete(Number(id))}
             >
               Delete
-            </button>
-            <button
-              style={{
-                width: "100%",
-                backgroundColor: "blue",
-                color: "white",
-                border: "none",
-                padding: "10px",
-              }}
-              onClick={() => toggleStock(Number(id))}
-            >
-              Toggle Stock
             </button>
           </div>
         </div>

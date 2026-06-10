@@ -1,94 +1,96 @@
-import { createContext, useEffect, useState } from "react";
-import { useLocalStorage } from "../hooks/useLocalStorage";
+import { createContext, useCallback, useEffect, useState } from "react";
 import type { Product } from "../types/Products";
+import { productService, type CreateProductInput, type UpdateProductInput } from "../services/productService";
 
 type ProductContextValue = {
   products: Product[];
-  addProduct: (product: Product) => void;
-  updateProduct: (product: Product) => void;
-  deleteProduct: (id: number) => void;
-  toggleStock: (id: number) => void;
+  getProductById: (id: number) => Promise<Product | null>;
+  createProduct: (productData: Omit<Product, "id">) => Promise<Product>;
+  updateProduct: (
+    id: number,
+    productData: Omit<Product, "id">
+  ) => Promise<Product | null>
+  deleteProduct: (id: number) => Promise<boolean>;
   isLoading: boolean
   error: string | null
 };
 
 const ProductContext = createContext<ProductContextValue | null>(null);
 
-const initialProducts: Product[] = [
-  {
-    id: 1,
-    name: "iPhone 15",
-    price: 25000000,
-    category: "Phone",
-    inStock: true,
-    discount: 10,
-  },
-  {
-    id: 2,
-    name: "MacBook Pro",
-    price: 50000000,
-    category: "Laptop",
-    inStock: true,
-    discount: 0,
-  },
-];
-
 type ProductProviderProps = {
   children: React.ReactNode;
 };
 
 export function ProductProvider({ children }: ProductProviderProps) {
-  const [products, setProducts] = useLocalStorage<Product[]>(
-    "products",
-    initialProducts,
-  );
-
+  const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const loadProducts = useCallback(async () => {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
+
+      const products = await productService.getProducts();
+
+      setProducts(products);
     } catch {
-      setError("Failed to load products")
+      setError("Failed to load products.");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const addProduct = (product: Product) => {
-    setProducts((prevProducts) => [...prevProducts, product]);
-  };
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
-  const updateProduct = (updatedProduct: Product) => {
+  const getProductById = useCallback(async (id: number) => {
+    return await productService.getProductById(id);
+  }, [])
+
+  const createProduct = useCallback(async (productData: CreateProductInput) => {
+    const newProduct = await productService.createProduct(productData)
+    setProducts((currentProducts) => {
+      return [...currentProducts, newProduct]
+    })
+
+    return newProduct;
+  }, [])
+
+  const updateProduct = useCallback(
+    async (id: number, productData: UpdateProductInput) => {
+      const updatedProduct = await productService.updateProduct(id, productData);
+
+      if (!updatedProduct) {
+        return null;
+      }
+
+      setProducts((currentProducts) =>
+        currentProducts.map((product) =>
+          product.id === id ? updatedProduct : product
+        )
+      );
+
+      return updatedProduct;
+    },
+    []
+  );
+
+  const deleteProduct = async (id: number) => {
+    await productService.deleteProduct(id);
+
     setProducts((prevProducts) =>
-      prevProducts.map((product) =>
-        product.id === updatedProduct.id ? updatedProduct : product,
-      ),
-    );
-  };
-
-  const deleteProduct = (id: number) => {
-    setProducts((prevProducts) =>
-      prevProducts.filter((product) => product.id !== id),
-    );
-  };
-
-  const toggleStock = (id: number) => {
-    setProducts((prevProducts: Product[]) =>
-      prevProducts.map((product: Product) =>
-        product.id === id ? { ...product, inStock: !product.inStock } : product,
-      ),
+      prevProducts.filter((product) => product.id !== id)
     );
   };
 
   const value: ProductContextValue = {
     products,
-    addProduct,
+    getProductById,
+    createProduct,
     updateProduct,
     deleteProduct,
-    toggleStock,
     isLoading,
     error,
   };
